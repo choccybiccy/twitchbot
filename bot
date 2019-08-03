@@ -1,0 +1,13 @@
+#!/usr/bin/env php
+<?php
+
+if (is_file($autoload = getcwd() . '/vendor/autoload.php')) {
+    require $autoload;
+} elseif (is_file($autoload = getcwd() . '/../../autoload.php')) {
+    require $autoload;
+}
+
+$container = new League\Container\Container();
+$container->addServiceProvider(new Choccybiccy\TwitchBot\Providers\ApplicationProvider());
+
+$container->get(Choccybiccy\TwitchBot\Application::class)->run();

@@ -1,0 +1,4 @@
+suites:
+  twitchbot:
+    namespace: Choccybiccy\TwitchBot
+    psr4_prefix: Choccybiccy\TwitchBot
