@@ -4,6 +4,7 @@ namespace Choccybiccy\TwitchBot\Twitch;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
+use Tightenco\Collect\Support\Collection;
 
 /**
  * Class Client.
@@ -66,6 +67,21 @@ class Client
         $id = $userId ?? $this->getUser()['id'];
         $response = $this->apiCall('streams?user_id=' . $id);
         return current($response['data']) ?: [];
+    }
+
+    /**
+     * @return Collection
+     * @throws GuzzleException
+     */
+    public function getModerators(): Collection
+    {
+        $response = $this->apiCall('moderation/moderators?first=100');
+        $collection = new Collection($response['data']);
+        while(count($response['data']) == 100) {
+            $response = $this->apiCall('moderation/moderators?first=100&after=' . $response['pagination']['cursor']);
+            $collection = $collection->merge($response['data']);
+        }
+        die("HERE");
     }
 
     /**

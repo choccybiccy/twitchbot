@@ -108,6 +108,7 @@ class Application implements ApplicationInterface
                 if ($handler instanceof LoggerAwareInterface) {
                     $handler->setLogger($this->logger);
                 }
+                $this->logger->debug('Handled by ' . get_class($handler), ['message' => $message]);
                 $handler->handle($message, $socket);
             }
         }

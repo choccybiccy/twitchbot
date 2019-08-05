@@ -3,6 +3,7 @@
 namespace Choccybiccy\TwitchBot\Providers;
 
 use Choccybiccy\TwitchBot\Application;
+use Choccybiccy\TwitchBot\Handlers\CustomCommandHandler;
 use Choccybiccy\TwitchBot\Handlers\KeepAliveHandler;
 use Choccybiccy\TwitchBot\Handlers\TwitchStatsHandler;
 use Choccybiccy\TwitchBot\Twitch\Client;
@@ -53,6 +54,7 @@ class ApplicationProvider extends AbstractServiceProvider
                 [
                     $this->container->get(KeepAliveHandler::class),
                     $this->container->get(TwitchStatsHandler::class),
+                    $this->container->get(CustomCommandHandler::class),
                 ],
                 $this->container->get(LoggerInterface::class)
             );
@@ -70,6 +72,9 @@ class ApplicationProvider extends AbstractServiceProvider
                 getenv('TWITCHBOT_BROADCASTER_NICKNAME'),
                 $this->container->get(Client::class)
             );
+        });
+        $this->container->add(CustomCommandHandler::class, function () {
+            return new CustomCommandHandler($this->container->get(Client::class));
         });
     }
 }

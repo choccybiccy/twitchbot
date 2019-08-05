@@ -17,5 +17,8 @@ trait CanSendChat
     public function sendMessage(string $message, string $channel, WebSocket $socket)
     {
         $socket->send(sprintf('PRIVMSG #%s :%s', $channel, $message));
+        if (property_exists($this, 'logger')) {
+            $this->logger->debug('> ' . $message, ['channel' => $channel]);
+        }
     }
 }

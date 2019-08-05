@@ -7,6 +7,12 @@ if (is_file($autoload = getcwd() . '/vendor/autoload.php')) {
     require $autoload;
 }
 
+if (!file_exists('.env')) {
+    die("Missing .env file\n");
+}
+$dotenv = Dotenv\Dotenv::create(__DIR__);
+$dotenv->load();
+
 $container = new League\Container\Container();
 $container->addServiceProvider(new Choccybiccy\TwitchBot\Providers\ApplicationProvider());
 
