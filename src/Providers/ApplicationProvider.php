@@ -46,7 +46,7 @@ class ApplicationProvider extends AbstractServiceProvider
         $this->loadHandlers();
         $this->container->add(Application::class, function () {
             return new Application(
-                getenv('TWITCHBOT_NICKNAME'),
+                getenv('TWITCHBOT_BOT_NICKNAME'),
                 getenv('TWITCHBOT_CHANNEL'),
                 getenv('TWITCHBOT_BOT_TOKEN'),
                 $this->container->get('react.client.twitch'),
