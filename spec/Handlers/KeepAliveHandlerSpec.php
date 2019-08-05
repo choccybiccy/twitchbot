@@ -2,9 +2,7 @@
 
 namespace spec\Choccybiccy\TwitchBot\Handlers;
 
-use Choccybiccy\TwitchBot\Handlers\KeepAliveHandler;
 use PhpSpec\ObjectBehavior;
-use Prophecy\Argument;
 use Psr\Log\LoggerInterface;
 use Ratchet\Client\WebSocket;
 

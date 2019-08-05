@@ -3,11 +3,10 @@
 namespace Choccybiccy\TwitchBot\Providers;
 
 use Choccybiccy\TwitchBot\Application;
-use Choccybiccy\TwitchBot\Handlers\EchoHandler;
 use Choccybiccy\TwitchBot\Handlers\KeepAliveHandler;
-use Depotwarehouse\OAuth2\Client\Twitch\Provider\Twitch;
+use Choccybiccy\TwitchBot\Handlers\TwitchStatsHandler;
+use Choccybiccy\TwitchBot\Twitch\Client;
 use League\Container\ServiceProvider\AbstractServiceProvider;
-use League\OAuth2\Client\Provider\GenericProvider;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
@@ -24,7 +23,6 @@ class ApplicationProvider extends AbstractServiceProvider
     protected $provides = [
         'react.client',
         LoggerInterface::class,
-        Twitch::class,
         Application::class,
     ];
 
@@ -33,24 +31,44 @@ class ApplicationProvider extends AbstractServiceProvider
      */
     public function register()
     {
-        $this->getContainer()->add('react.client.twitch', function () {
+        $this->container->add('react.client.twitch', function () {
             return connect('wss://irc-ws.chat.twitch.tv:443');
         });
 
-        $this->getContainer()->add(LoggerInterface::class, function () {
+        $this->container->add(LoggerInterface::class, function () {
             return new Logger('twitchbot', [
                 new StreamHandler('php://stderr', getenv('TWITCHBOT_LOG_LEVEL') ?? Logger::DEBUG)
             ]);
         });
 
-        $this->getContainer()->add(Application::class, function () {
+        $this->container->add(Client::class, new Client(getenv('TWITCHBOT_BROADCASTER_TOKEN')));
+
+        $this->loadHandlers();
+        $this->container->add(Application::class, function () {
             return new Application(
                 getenv('TWITCHBOT_NICKNAME'),
                 getenv('TWITCHBOT_CHANNEL'),
-                getenv('TWITCHBOT_OAUTH_TOKEN'),
+                getenv('TWITCHBOT_BOT_TOKEN'),
                 $this->container->get('react.client.twitch'),
-                [new KeepAliveHandler],
+                [
+                    $this->container->get(KeepAliveHandler::class),
+                    $this->container->get(TwitchStatsHandler::class),
+                ],
                 $this->container->get(LoggerInterface::class)
+            );
+        });
+    }
+
+    /**
+     * Load all the twitchbot handlers.
+     */
+    protected function loadHandlers(): void
+    {
+        $this->container->add(KeepAliveHandler::class, new KeepAliveHandler());
+        $this->container->add(TwitchStatsHandler::class, function () {
+            return new TwitchStatsHandler(
+                getenv('TWITCHBOT_BROADCASTER_NICKNAME'),
+                $this->container->get(Client::class)
             );
         });
     }

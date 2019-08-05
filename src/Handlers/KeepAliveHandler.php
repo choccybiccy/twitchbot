@@ -22,8 +22,8 @@ class KeepAliveHandler implements HandlerInterface, LoggerAwareInterface
     public function handle(string $message, WebSocket $socket)
     {
         if (preg_match('/^PING\s+(.*)/', $message, $matches)) {
-            $this->logger->debug('PING? PONG!');
             $socket->send('PONG ' . $matches[1]);
+            $this->logger->debug('> PONG ' . $matches[1]);
         }
     }
 

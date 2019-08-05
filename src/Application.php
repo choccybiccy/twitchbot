@@ -27,7 +27,7 @@ class Application implements ApplicationInterface
     /**
      * @var string
      */
-    protected $oauthToken;
+    protected $botToken;
 
     /**
      * @var ReactClient
@@ -49,7 +49,7 @@ class Application implements ApplicationInterface
      *
      * @param string $nickname
      * @param string $channel
-     * @param string $oauthToken
+     * @param string $botToken
      * @param ReactClient $reactClient
      * @param HandlerInterface[] $handlers
      * @param LoggerInterface $logger
@@ -57,14 +57,14 @@ class Application implements ApplicationInterface
     public function __construct(
         string $nickname,
         string $channel,
-        string $oauthToken,
+        string $botToken,
         ReactClient $reactClient,
         array $handlers,
         LoggerInterface $logger
     ) {
         $this->nickname = $nickname;
         $this->channel = $channel;
-        $this->oauthToken = $oauthToken;
+        $this->botToken = $botToken;
         $this->reactClient = $reactClient;
         $this->handlers = $handlers;
         $this->logger = $logger;
@@ -75,8 +75,11 @@ class Application implements ApplicationInterface
      */
     public function run()
     {
+        foreach ($this->handlers as $handler) {
+            $this->logger->debug('Loaded handler: ' . get_class($handler));
+        }
         $this->reactClient->then(function (WebSocket $socket) {
-            $this->logger->info('Client started');
+            $this->logger->info('Connection established');
             $this->socket = $socket;
             $socket->on('message', function ($message) use ($socket) {
                 $this->logger->debug('< ' . $message);
@@ -88,7 +91,7 @@ class Application implements ApplicationInterface
                     'reason' => $reason,
                 ]);
             });
-            $socket->send('PASS oauth:' . $this->oauthToken);
+            $socket->send('PASS oauth:' . $this->botToken);
             $socket->send('NICK ' . $this->nickname);
             $socket->send('JOIN #' . $this->channel);
         });

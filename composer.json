@@ -10,7 +10,10 @@
     "require": {
         "league/container": "^3.3",
         "ratchet/pawl": "^0.3.4",
-        "monolog/monolog": "^1.24"
+        "monolog/monolog": "^1.24",
+        "guzzlehttp/guzzle": "^6.3",
+        "tightenco/collect": "^5.8",
+        "nesbot/carbon": "^2.22"
     },
     "require-dev": {
         "phpspec/phpspec": "^5.1"
