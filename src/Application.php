@@ -91,9 +91,10 @@ class Application implements ApplicationInterface
                     'reason' => $reason,
                 ]);
             });
-            $socket->send('PASS oauth:' . $this->botToken);
-            $socket->send('NICK ' . $this->nickname);
-            $socket->send('JOIN #' . $this->channel);
+            $socket->send(sprintf('PASS oauth:%s', $this->botToken));
+            $socket->send(sprintf('NICK %s', $this->nickname));
+            $socket->send(sprintf('JOIN #%s', $this->channel));
+            $socket->send(sprintf('PRIVMSG #%s :Bleep bloop!', $this->channel));
         });
     }
 
