@@ -136,12 +136,10 @@ class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface
                 {
                     case 'addcommand':
                         $this->addCommand($matches[2], trim($matches[3]));
-                        $this->sendMessage($user . ': Command added', $this->getChannel($message), $socket);
                         $this->logger->debug('Added command ' . $matches[2], ['value' => trim($matches[3])]);
                         break;
                     case 'removecommand':
                         $this->removeCommand($matches[2]);
-                        $this->sendMessage($user . ': Command removed', $this->getChannel($message), $socket);
                         $this->logger->debug('Removed command ' . $matches[2]);
                         break;
                 }
