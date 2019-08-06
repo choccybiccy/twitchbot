@@ -13,7 +13,7 @@ use Ratchet\Client\WebSocket;
 /**
  * Class CustomCommandHandler.
  */
-class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface
+class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface, CommandHandlerInterface
 {
     use CanSendChat, CanReadChat, CanLog;
 
@@ -187,5 +187,13 @@ class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface
         $editCommands = [$this->addCommandString, $this->removeCommandString];
         $commands = implode('|', array_merge($editCommands, array_keys($this->commands)));
         return preg_match("/^\!(?:{$commands})/", $this->getMessage($message));
+    }
+
+    /**
+     * @return array
+     */
+    public function commandsSupported(): array
+    {
+        return array_keys($this->commands);
     }
 }

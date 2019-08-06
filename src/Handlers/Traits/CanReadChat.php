@@ -34,7 +34,7 @@ trait CanReadChat
      */
     public function getMessage(string $message): ?string
     {
-        return $this->extractMessageParts($message)['message'];
+        return trim($this->extractMessageParts($message)['message']);
     }
 
     /**

@@ -4,7 +4,6 @@ namespace Choccybiccy\TwitchBot\Handlers;
 
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use Choccybiccy\TwitchBot\Handlers\Traits\CanLog;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanReadChat;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanSendChat;
 use Choccybiccy\TwitchBot\Twitch\Client;
@@ -14,7 +13,7 @@ use Ratchet\Client\WebSocket;
 /**
  * Class TwitchStatsHandler.
  */
-class TwitchStatsHandler implements HandlerInterface
+class TwitchStatsHandler implements HandlerInterface, CommandHandlerInterface
 {
     use CanReadChat, CanSendChat;
 
@@ -141,5 +140,13 @@ class TwitchStatsHandler implements HandlerInterface
     {
         $commands = implode('|', $this->commands);
         return preg_match("/^\!(?:{$commands})/", $this->getMessage($message));
+    }
+
+    /**
+     * @return array
+     */
+    public function commandsSupported(): array
+    {
+        return $this->commands;
     }
 }
