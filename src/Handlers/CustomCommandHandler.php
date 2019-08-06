@@ -33,6 +33,21 @@ class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface
     protected $commandsJsonPath;
 
     /**
+     * @var string
+     */
+    protected $defaultCommandsFile = 'commands.json';
+
+    /**
+     * @var string
+     */
+    protected $addCommandString = 'addcommand';
+
+    /**
+     * @var string
+     */
+    protected $removeCommandString = 'removecommand';
+
+    /**
      * CustomCommandHandler constructor.
      *
      * @param Client $client
@@ -42,7 +57,7 @@ class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface
     {
         $this->client = $client;
         if (!$commandsJsonPath) {
-            $commandsJsonPath = realpath(__DIR__ . '/../../var/') . '/commands.json';
+            $commandsJsonPath = realpath(__DIR__ . '/../../var/') . '/' . $this->defaultCommandsFile;
         }
         $this->commandsJsonPath = $commandsJsonPath;
         if (file_exists($commandsJsonPath)) {
@@ -126,7 +141,9 @@ class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface
 
         $commands = implode('|', array_keys($this->commands));
         $inputMessage = trim($this->getMessage($message));
-        if (preg_match('/^\!(addcommand|removecommand) (\w+)(?: (.*))?/', $inputMessage, $matches)) {
+
+        $editCommands = implode('|', [$this->addCommandString, $this->removeCommandString]);
+        if (preg_match('/^\!('.$editCommands.') (\w+)(?: (.*))?/', $inputMessage, $matches)) {
             $broadcaster = $this->client->getUser();
             //$moderators = $this->client->getModerators()->pluck('user_name')->toArray();
             $moderators = [];
@@ -134,11 +151,11 @@ class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface
             if (in_array($user, $admins)) {
                 switch($matches[1])
                 {
-                    case 'addcommand':
+                    case $this->addCommandString:
                         $this->addCommand($matches[2], trim($matches[3]));
                         $this->logger->debug('Added command ' . $matches[2], ['value' => trim($matches[3])]);
                         break;
-                    case 'removecommand':
+                    case $this->removeCommandString:
                         $this->removeCommand($matches[2]);
                         $this->logger->debug('Removed command ' . $matches[2]);
                         break;
@@ -146,8 +163,18 @@ class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface
                 $this->save();
             }
         } elseif(count($this->commands) && preg_match('/^\!('.$commands.')$/', $inputMessage, $matches)) {
-            $this->sendMessage($this->commands[$matches[1]], $this->getChannel($message), $socket);
+            $this->sendMessage($this->getMessageForOutput($matches[1]), $this->getChannel($message), $socket);
         }
+    }
+
+    /**
+     * @param string $key
+     *
+     * @return string
+     */
+    protected function getMessageForOutput(string $key): string
+    {
+        return $this->commands[$key];
     }
 
     /**
@@ -157,7 +184,8 @@ class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface
      */
     public function canHandle(string $message): bool
     {
-        $commands = implode('|', array_merge(['addcommand', 'removecommand'], array_keys($this->commands)));
+        $editCommands = [$this->addCommandString, $this->removeCommandString];
+        $commands = implode('|', array_merge($editCommands, array_keys($this->commands)));
         return preg_match("/^\!(?:{$commands})/", $this->getMessage($message));
     }
 }
