@@ -4,5 +4,5 @@ php:
     - '7.1'
     - '7.2'
     - '7.3'
-script: vendor/bin/phpspec run --format=dot
+script: ./vendor/bin/phpspec run --format=dot
 
