@@ -57,6 +57,6 @@ class ListCommandsHandler implements HandlerInterface
      */
     public function canHandle(string $message): bool
     {
-        return $this->getMessage($message) == '!listcommands';
+        return $this->getMessage($message) == '!commands';
     }
 }

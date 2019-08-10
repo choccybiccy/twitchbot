@@ -7,6 +7,7 @@ use Choccybiccy\TwitchBot\Handlers\CountdownCommandHandler;
 use Choccybiccy\TwitchBot\Handlers\CustomCommandHandler;
 use Choccybiccy\TwitchBot\Handlers\KeepAliveHandler;
 use Choccybiccy\TwitchBot\Handlers\ListCommandsHandler;
+use Choccybiccy\TwitchBot\Handlers\QueueHandler;
 use Choccybiccy\TwitchBot\Handlers\TwitchStatsHandler;
 use Choccybiccy\TwitchBot\Twitch\Client;
 use League\Container\ServiceProvider\AbstractServiceProvider;
@@ -58,6 +59,7 @@ class ApplicationProvider extends AbstractServiceProvider
                     $this->container->get(TwitchStatsHandler::class),
                     $this->container->get(CustomCommandHandler::class),
                     $this->container->get(CountdownCommandHandler::class),
+                    $this->container->get(QueueHandler::class),
                     $this->container->get(ListCommandsHandler::class),
                 ],
                 $this->container->get(LoggerInterface::class)
@@ -83,11 +85,15 @@ class ApplicationProvider extends AbstractServiceProvider
         $this->container->add(CountdownCommandHandler::class, function () {
             return new CountdownCommandHandler($this->container->get(Client::class));
         });
+        $this->container->add(QueueHandler::class, function () {
+            return new QueueHandler($this->container->get(Client::class));
+        });
         $this->container->add(ListCommandsHandler::class, function () {
             return new ListCommandsHandler([
                 $this->container->get(TwitchStatsHandler::class),
                 $this->container->get(CountdownCommandHandler::class),
                 $this->container->get(CustomCommandHandler::class),
+                $this->container->get(QueueHandler::class),
             ]);
         });
     }

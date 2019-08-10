@@ -13,9 +13,9 @@ class ListCommandsHandlerSpec extends ObjectBehavior
         $this->beConstructedWith([$handler]);
     }
 
-    public function it_should_handle_listcommands()
+    public function it_should_handle_commands()
     {
-        $this->canHandle(':user!user@channel.tmi.twitch.tv PRIVMSG #channel :!listcommands')->shouldReturn(true);
+        $this->canHandle(':user!user@channel.tmi.twitch.tv PRIVMSG #channel :!commands')->shouldReturn(true);
     }
 
     public function it_should_list_commands(CommandHandlerInterface $handler, WebSocket $socket)
@@ -23,6 +23,6 @@ class ListCommandsHandlerSpec extends ObjectBehavior
         $handler->commandsSupported()->willReturn(['abc', 'xyz']);
         $this->beConstructedWith([$handler]);
         $socket->send('PRIVMSG #channel :!abc, !xyz')->shouldBeCalled();
-        $this->handle(':user!user@channel.tmi.twitch.tv PRIVMSG #channel :!listcommands', $socket);
+        $this->handle(':user!user@channel.tmi.twitch.tv PRIVMSG #channel :!commands', $socket);
     }
 }
