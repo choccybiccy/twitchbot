@@ -15,6 +15,8 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use function Ratchet\Client\connect;
+use Ratchet\Client\Connector;
+use React\EventLoop\Factory;
 
 /**
  * Class ApplicationProvider.
@@ -35,8 +37,17 @@ class ApplicationProvider extends AbstractServiceProvider
      */
     public function register()
     {
+        $this->container->add('react.loop', function () {
+            return Factory::create();
+        }, true);
         $this->container->add('react.client.twitch', function () {
-            return connect('wss://irc-ws.chat.twitch.tv:443');
+            $loop = $this->container->get('react.loop');
+            $reactConnector = new \React\Socket\Connector($loop, [
+                'dns' => '8.8.8.8',
+                'timeout' => 10
+            ]);
+            $connector = new Connector($loop, $reactConnector);
+            return $connector('wss://irc-ws.chat.twitch.tv:443');
         });
 
         $this->container->add(LoggerInterface::class, function () {
@@ -53,6 +64,7 @@ class ApplicationProvider extends AbstractServiceProvider
                 getenv('TWITCHBOT_BOT_NICKNAME'),
                 getenv('TWITCHBOT_CHANNEL'),
                 getenv('TWITCHBOT_BOT_TOKEN'),
+                $this->container->get('react.loop'),
                 $this->container->get('react.client.twitch'),
                 [
                     $this->container->get(KeepAliveHandler::class),

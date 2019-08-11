@@ -3,10 +3,12 @@
 namespace Choccybiccy\TwitchBot;
 
 use Choccybiccy\TwitchBot\Handlers\HandlerInterface;
+use Choccybiccy\TwitchBot\Handlers\LoopAwareHandlerInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Ratchet\Client\WebSocket;
+use React\EventLoop\LoopInterface;
 use React\Promise\Promise as ReactClient;
 
 /**
@@ -30,6 +32,11 @@ class Application implements ApplicationInterface
     protected $botToken;
 
     /**
+     * @var LoopInterface
+     */
+    protected $loop;
+
+    /**
      * @var ReactClient
      */
     protected $reactClient;
@@ -50,6 +57,7 @@ class Application implements ApplicationInterface
      * @param string $nickname
      * @param string $channel
      * @param string $botToken
+     * @param LoopInterface $loop
      * @param ReactClient $reactClient
      * @param HandlerInterface[] $handlers
      * @param LoggerInterface $logger
@@ -58,6 +66,7 @@ class Application implements ApplicationInterface
         string $nickname,
         string $channel,
         string $botToken,
+        LoopInterface $loop,
         ReactClient $reactClient,
         array $handlers,
         LoggerInterface $logger
@@ -65,6 +74,7 @@ class Application implements ApplicationInterface
         $this->nickname = $nickname;
         $this->channel = $channel;
         $this->botToken = $botToken;
+        $this->loop = $loop;
         $this->reactClient = $reactClient;
         $this->handlers = $handlers;
         $this->logger = $logger;
@@ -77,6 +87,12 @@ class Application implements ApplicationInterface
     {
         foreach ($this->handlers as $handler) {
             $this->logger->debug('Loaded handler: ' . get_class($handler));
+            if ($handler instanceof LoggerAwareInterface) {
+                $handler->setLogger($this->logger);
+            }
+            if ($handler instanceof LoopAwareHandlerInterface) {
+                $handler->setLoop($this->loop);
+            }
         }
         $this->reactClient->then(function (WebSocket $socket) {
             $this->logger->info('Connection established');
@@ -96,6 +112,7 @@ class Application implements ApplicationInterface
             $socket->send(sprintf('JOIN #%s', $this->channel));
             $socket->send(sprintf('PRIVMSG #%s :Bleep bloop!', $this->channel));
         });
+        $this->loop->run();
     }
 
     /**
@@ -106,9 +123,6 @@ class Application implements ApplicationInterface
     {
         foreach ($this->handlers as $handler) {
             if ($handler->canHandle($message)) {
-                if ($handler instanceof LoggerAwareInterface) {
-                    $handler->setLogger($this->logger);
-                }
                 $this->logger->debug('Handled by ' . get_class($handler), ['message' => $message]);
                 $handler->handle($message, $socket);
             }
