@@ -4,6 +4,7 @@ namespace Choccybiccy\TwitchBot\Handlers;
 
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Choccybiccy\TwitchBot\Handlers\Interfaces\CommandHandlerInterface;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanReadChat;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanSendChat;
 use Choccybiccy\TwitchBot\Twitch\Client;
@@ -13,7 +14,7 @@ use Ratchet\Client\WebSocket;
 /**
  * Class TwitchStatsHandler.
  */
-class TwitchStatsHandler implements HandlerInterface, CommandHandlerInterface
+class TwitchStatsHandler extends AbstractHandler implements CommandHandlerInterface
 {
     use CanReadChat, CanSendChat;
 

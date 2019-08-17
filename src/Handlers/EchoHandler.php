@@ -9,7 +9,7 @@ use Ratchet\Client\WebSocket;
 /**
  * Class EchoHandler.
  */
-class EchoHandler implements HandlerInterface
+class EchoHandler extends AbstractHandler
 {
     use CanReadChat, CanSendChat;
 

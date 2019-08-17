@@ -3,6 +3,7 @@
 namespace Choccybiccy\TwitchBot\Providers;
 
 use Choccybiccy\TwitchBot\Application;
+use Choccybiccy\TwitchBot\Handlers\AnnouncementHandler;
 use Choccybiccy\TwitchBot\Handlers\CountdownCommandHandler;
 use Choccybiccy\TwitchBot\Handlers\CustomCommandHandler;
 use Choccybiccy\TwitchBot\Handlers\KeepAliveHandler;
@@ -11,6 +12,9 @@ use Choccybiccy\TwitchBot\Handlers\QueueHandler;
 use Choccybiccy\TwitchBot\Handlers\TwitchStatsHandler;
 use Choccybiccy\TwitchBot\Twitch\Client;
 use League\Container\ServiceProvider\AbstractServiceProvider;
+use League\Flysystem\Adapter\Local;
+use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemInterface;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
@@ -50,6 +54,11 @@ class ApplicationProvider extends AbstractServiceProvider
             return $connector('wss://irc-ws.chat.twitch.tv:443');
         });
 
+        $this->container->add(FilesystemInterface::class, function () {
+            $adapter = new Local(__DIR__ . '/../../var');
+            return new Filesystem($adapter);
+        });
+
         $this->container->add(LoggerInterface::class, function () {
             return new Logger('twitchbot', [
                 new StreamHandler('php://stderr', getenv('TWITCHBOT_LOG_LEVEL') ?? Logger::DEBUG)
@@ -66,12 +75,14 @@ class ApplicationProvider extends AbstractServiceProvider
                 getenv('TWITCHBOT_BOT_TOKEN'),
                 $this->container->get('react.loop'),
                 $this->container->get('react.client.twitch'),
+                $this->container->get(FilesystemInterface::class),
                 [
                     $this->container->get(KeepAliveHandler::class),
                     $this->container->get(TwitchStatsHandler::class),
                     $this->container->get(CustomCommandHandler::class),
                     $this->container->get(CountdownCommandHandler::class),
                     $this->container->get(QueueHandler::class),
+                    $this->container->get(AnnouncementHandler::class),
                     $this->container->get(ListCommandsHandler::class),
                 ],
                 $this->container->get(LoggerInterface::class)
@@ -99,6 +110,9 @@ class ApplicationProvider extends AbstractServiceProvider
         });
         $this->container->add(QueueHandler::class, function () {
             return new QueueHandler($this->container->get(Client::class));
+        });
+        $this->container->add(AnnouncementHandler::class, function () {
+            return new AnnouncementHandler($this->container->get(Client::class));
         });
         $this->container->add(ListCommandsHandler::class, function () {
             return new ListCommandsHandler([

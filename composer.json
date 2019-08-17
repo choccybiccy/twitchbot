@@ -14,7 +14,8 @@
         "guzzlehttp/guzzle": "^6.3",
         "tightenco/collect": "^5.8",
         "nesbot/carbon": "^2.22",
-        "vlucas/phpdotenv": "^3.4"
+        "vlucas/phpdotenv": "^3.4",
+        "league/flysystem": "^1.0"
     },
     "require-dev": {
         "phpspec/phpspec": "^5.1",

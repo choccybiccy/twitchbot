@@ -2,6 +2,8 @@
 
 namespace Choccybiccy\TwitchBot\Handlers;
 
+use Choccybiccy\TwitchBot\Handlers\Interfaces\CommandHandlerInterface;
+use Choccybiccy\TwitchBot\Handlers\Interfaces\HandlerInterface;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanLog;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanReadChat;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanSendChat;
@@ -60,8 +62,15 @@ class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface, Co
             $commandsJsonPath = realpath(__DIR__ . '/../../var/') . '/' . $this->defaultCommandsFile;
         }
         $this->commandsJsonPath = $commandsJsonPath;
-        if (file_exists($commandsJsonPath)) {
-            $commands = json_decode(file_get_contents($commandsJsonPath), true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function load(WebSocket $socket)
+    {
+        if (file_exists($this->commandsJsonPath)) {
+            $commands = json_decode(file_get_contents($this->commandsJsonPath), true);
             if ($commands) {
                 $this->commands = $commands;
             }

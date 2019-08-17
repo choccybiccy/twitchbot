@@ -2,7 +2,7 @@
 
 namespace spec\Choccybiccy\TwitchBot\Handlers;
 
-use Choccybiccy\TwitchBot\Handlers\CommandHandlerInterface;
+use Choccybiccy\TwitchBot\Handlers\Interfaces\CommandHandlerInterface;
 use PhpSpec\ObjectBehavior;
 use Ratchet\Client\WebSocket;
 

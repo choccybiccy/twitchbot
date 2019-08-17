@@ -1,6 +1,6 @@
 <?php
 
-namespace Choccybiccy\TwitchBot\Handlers;
+namespace Choccybiccy\TwitchBot\Handlers\Interfaces;
 
 /**
  * Interface CommandHandlerInterface.

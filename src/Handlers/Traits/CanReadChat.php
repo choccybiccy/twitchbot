@@ -12,7 +12,7 @@ trait CanReadChat
      *
      * @return string
      */
-    public function getUser(string $message): string
+    public function getUser(string $message): ?string
     {
         return $this->extractMessageParts($message)['user'];
     }

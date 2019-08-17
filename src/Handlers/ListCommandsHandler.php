@@ -2,6 +2,7 @@
 
 namespace Choccybiccy\TwitchBot\Handlers;
 
+use Choccybiccy\TwitchBot\Handlers\Interfaces\CommandHandlerInterface;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanReadChat;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanSendChat;
 use Ratchet\Client\WebSocket;
@@ -10,7 +11,7 @@ use Tightenco\Collect\Support\Collection;
 /**
  * Class ListCommandsHandler.
  */
-class ListCommandsHandler implements HandlerInterface
+class ListCommandsHandler extends AbstractHandler
 {
     use CanReadChat, CanSendChat;
 

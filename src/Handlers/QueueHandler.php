@@ -2,6 +2,7 @@
 
 namespace Choccybiccy\TwitchBot\Handlers;
 
+use Choccybiccy\TwitchBot\Handlers\Interfaces\CommandHandlerInterface;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanReadChat;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanSendChat;
 use Choccybiccy\TwitchBot\Twitch\Client;
@@ -11,7 +12,7 @@ use Tightenco\Collect\Support\Collection;
 /**
  * Class QueueHandler.
  */
-class QueueHandler implements CommandHandlerInterface, HandlerInterface
+class QueueHandler extends AbstractHandler implements CommandHandlerInterface
 {
     use CanReadChat, CanSendChat;
 

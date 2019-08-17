@@ -2,9 +2,10 @@
 
 namespace Choccybiccy\TwitchBot;
 
-use Choccybiccy\TwitchBot\Handlers\HandlerInterface;
-use Choccybiccy\TwitchBot\Handlers\LoopAwareHandlerInterface;
-use Psr\Container\ContainerInterface;
+use Choccybiccy\TwitchBot\Handlers\Interfaces\FilesystemAwareHandlerInterface;
+use Choccybiccy\TwitchBot\Handlers\Interfaces\HandlerInterface;
+use Choccybiccy\TwitchBot\Handlers\Interfaces\LoopAwareHandlerInterface;
+use League\Flysystem\FilesystemInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Ratchet\Client\WebSocket;
@@ -42,6 +43,11 @@ class Application implements ApplicationInterface
     protected $reactClient;
 
     /**
+     * @var FilesystemInterface
+     */
+    protected $filesystem;
+
+    /**
      * @var HandlerInterface[]
      */
     protected $handlers = [];
@@ -59,6 +65,7 @@ class Application implements ApplicationInterface
      * @param string $botToken
      * @param LoopInterface $loop
      * @param ReactClient $reactClient
+     * @param FilesystemInterface $filesystem
      * @param HandlerInterface[] $handlers
      * @param LoggerInterface $logger
      */
@@ -68,6 +75,7 @@ class Application implements ApplicationInterface
         string $botToken,
         LoopInterface $loop,
         ReactClient $reactClient,
+        FilesystemInterface $filesystem,
         array $handlers,
         LoggerInterface $logger
     ) {
@@ -76,6 +84,7 @@ class Application implements ApplicationInterface
         $this->botToken = $botToken;
         $this->loop = $loop;
         $this->reactClient = $reactClient;
+        $this->filesystem = $filesystem;
         $this->handlers = $handlers;
         $this->logger = $logger;
     }
@@ -93,8 +102,14 @@ class Application implements ApplicationInterface
             if ($handler instanceof LoopAwareHandlerInterface) {
                 $handler->setLoop($this->loop);
             }
+            if ($handler instanceof FilesystemAwareHandlerInterface) {
+                $handler->setFilesystem($this->filesystem);
+            }
         }
         $this->reactClient->then(function (WebSocket $socket) {
+            foreach ($this->handlers as $handler) {
+                $handler->load($socket);
+            }
             $this->logger->info('Connection established');
             $this->socket = $socket;
             $socket->on('message', function ($message) use ($socket) {

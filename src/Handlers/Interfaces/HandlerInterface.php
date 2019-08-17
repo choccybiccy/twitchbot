@@ -1,6 +1,6 @@
 <?php
 
-namespace Choccybiccy\TwitchBot\Handlers;
+namespace Choccybiccy\TwitchBot\Handlers\Interfaces;
 
 use Ratchet\Client\WebSocket;
 
@@ -9,6 +9,13 @@ use Ratchet\Client\WebSocket;
  */
 interface HandlerInterface
 {
+    /**
+     * @param WebSocket $socket
+     *
+     * @return void
+     */
+    public function load(WebSocket $socket);
+
     /**
      * @param string $message
      * @param WebSocket $socket

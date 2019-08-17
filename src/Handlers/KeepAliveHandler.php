@@ -9,7 +9,7 @@ use Ratchet\Client\WebSocket;
 /**
  * Class KeepAliveHandler.
  */
-class KeepAliveHandler implements HandlerInterface, LoggerAwareInterface
+class KeepAliveHandler extends AbstractHandler implements LoggerAwareInterface
 {
     use CanLog;
 

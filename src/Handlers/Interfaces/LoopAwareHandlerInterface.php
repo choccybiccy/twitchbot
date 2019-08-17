@@ -1,6 +1,6 @@
 <?php
 
-namespace Choccybiccy\TwitchBot\Handlers;
+namespace Choccybiccy\TwitchBot\Handlers\Interfaces;
 
 use React\EventLoop\LoopInterface;
 
@@ -11,10 +11,8 @@ interface LoopAwareHandlerInterface
 {
     /**
      * @param LoopInterface $loop
-     *
-     * @return LoopAwareHandlerInterface
      */
-    public function setLoop(LoopInterface $loop): self;
+    public function setLoop(LoopInterface $loop);
 
     /**
      * @return LoopInterface
