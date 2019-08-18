@@ -2,9 +2,8 @@
 
 namespace spec\Choccybiccy\TwitchBot\Handlers;
 
-use Carbon\Carbon;
-use Carbon\CarbonInterface;
 use Choccybiccy\TwitchBot\Twitch\Client;
+use League\Flysystem\FilesystemInterface;
 use PhpSpec\ObjectBehavior;
 use Psr\Log\LoggerInterface;
 use Ratchet\Client\WebSocket;
@@ -20,28 +19,11 @@ class CountdownCommandHandlerSpec extends ObjectBehavior
      */
     protected $tempCommandsJson;
 
-    public function let(Client $client, LoggerInterface $logger)
+    public function let(Client $client, LoggerInterface $logger, FilesystemInterface $filesystem)
     {
-        $this->tempCommandsJson = sys_get_temp_dir() . '/' . uniqid('CountdownCommandHandlerSpec') . '.json';
-        $this->beConstructedWith($client, $this->tempCommandsJson);
+        $this->beConstructedWith($client);
         $this->setLogger($logger);
-    }
-
-    public function letGo()
-    {
-        if (file_exists($this->tempCommandsJson)) {
-            @unlink($this->tempCommandsJson);
-        }
-    }
-
-    public function it_should_set_commands()
-    {
-        $commands = [
-            'someCommand' => (new \DateTime('tomorrow'))->format('Y-m-d H:i'),
-            'someOtherCommand' => (new \DateTime('tomorrow'))->format('Y-m-d H:i'),
-        ];
-        $this->setCommands($commands);
-        $this->getCommands()->shouldReturn($commands);
+        $this->setFilesystem($filesystem);
     }
 
     public function it_should_add_commands()
@@ -63,15 +45,13 @@ class CountdownCommandHandlerSpec extends ObjectBehavior
             ->shouldReturn(true);
     }
 
-    public function it_should_addcommand(Client $client, WebSocket $socket)
+    public function it_should_addcommand(Client $client, FilesystemInterface $filesystem, WebSocket $socket)
     {
         $user = ['login' => uniqid('broadcaster_')];
-        $moderators = [
-            ['user_id' => mt_rand(10000, 99999), 'user_name' => uniqid('moderator1_')],
-            ['user_id' => mt_rand(10000, 99999), 'user_name' => uniqid('moderator2_')],
-        ];
         $client->getUser()->willReturn($user);
         $date = (new \DateTime('tomorrow'))->format('Y-m-d H:i');
+
+        $filesystem->put('countdowns.json', json_encode(['key' => $date]))->shouldBeCalled();
         $this->handle(
             ":{$user['login']}!user@channel.tmi.twitch.tv PRIVMSG #channel :!addcountdown key " . $date,
             $socket
@@ -79,7 +59,7 @@ class CountdownCommandHandlerSpec extends ObjectBehavior
         $this->getCommands()->shouldHaveKeyWithValue('key', $date);
     }
 
-    public function it_should_removecommand(Client $client, WebSocket $socket)
+    public function it_should_removecommand(Client $client, FilesystemInterface $filesystem, WebSocket $socket)
     {
         $user = ['login' => uniqid('broadcaster_')];
         $moderators = [
@@ -90,6 +70,8 @@ class CountdownCommandHandlerSpec extends ObjectBehavior
         $client->getModerators()->willReturn(new Collection($moderators));
         $date = (new \DateTime('tomorrow'))->format('Y-m-d H:i');
         $this->addCommand('key', $date);
+
+        $filesystem->put('countdowns.json', json_encode([]))->shouldBeCalled();
         $this->handle(":{$user['login']}!user@channel.tmi.twitch.tv PRIVMSG #channel :!removecountdown key", $socket);
         $this->getCommands()->shouldNotHaveKeyWithValue('key', $date);
     }

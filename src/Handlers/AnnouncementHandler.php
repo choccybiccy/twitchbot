@@ -6,21 +6,27 @@ use Choccybiccy\TwitchBot\Handlers\Interfaces\CommandHandlerInterface;
 use Choccybiccy\TwitchBot\Handlers\Interfaces\FilesystemAwareHandlerInterface;
 use Choccybiccy\TwitchBot\Handlers\Interfaces\HandlerInterface;
 use Choccybiccy\TwitchBot\Handlers\Interfaces\LoopAwareHandlerInterface;
+use Choccybiccy\TwitchBot\Handlers\Traits\CanLog;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanReadChat;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanSendChat;
 use Choccybiccy\TwitchBot\Handlers\Traits\UsesFilesystem;
 use Choccybiccy\TwitchBot\Handlers\Traits\UsesLoop;
 use Choccybiccy\TwitchBot\Twitch\Client;
 use League\Flysystem\FileNotFoundException;
+use Psr\Log\LoggerAwareInterface;
 use Ratchet\Client\WebSocket;
 use React\EventLoop\TimerInterface;
 
 /**
  * Class AnnouncementHandler.
  */
-class AnnouncementHandler implements HandlerInterface, LoopAwareHandlerInterface, CommandHandlerInterface, FilesystemAwareHandlerInterface
+class AnnouncementHandler implements HandlerInterface,
+    LoopAwareHandlerInterface,
+    CommandHandlerInterface,
+    FilesystemAwareHandlerInterface,
+    LoggerAwareInterface
 {
-    use UsesFilesystem, UsesLoop, CanReadChat, CanSendChat;
+    use UsesFilesystem, UsesLoop, CanReadChat, CanSendChat, CanLog;
 
     /**
      * @var Client
@@ -54,8 +60,13 @@ class AnnouncementHandler implements HandlerInterface, LoopAwareHandlerInterface
     {
         try {
             $announcements = json_decode($this->filesystem->read('announcements.json'), true);
-            foreach ($announcements as $handle => $announcement) {
-                $this->addAnnouncement($handle, $announcement['frequency'], $announcement['message'], $socket);
+            if (is_array($announcements)) {
+                foreach ($announcements as $handle => $announcement) {
+                    $this->addAnnouncement($handle, $announcement['frequency'], $announcement['message'], $socket);
+                }
+                $this->logger->info('Announcements loaded', $this->announcements);
+            } else {
+                $this->save();
             }
         } catch (FileNotFoundException $e) {
             $this->save();
@@ -133,6 +144,11 @@ class AnnouncementHandler implements HandlerInterface, LoopAwareHandlerInterface
             });
             $this->timers[$handle] = $timer;
         }
+        $this->logger->debug('Added announcement', [
+            'handle' => $handle,
+            'frequency' => $frequency,
+            'message' => $message,
+        ]);
         return true;
     }
 

@@ -13,7 +13,7 @@ class CountdownCommandHandler extends CustomCommandHandler
     /**
      * @var string
      */
-    protected $defaultCommandsFile = 'countdowns.json';
+    protected $commandsFile = 'countdowns.json';
 
     /**
      * @var string

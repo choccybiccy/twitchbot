@@ -3,21 +3,27 @@
 namespace Choccybiccy\TwitchBot\Handlers;
 
 use Choccybiccy\TwitchBot\Handlers\Interfaces\CommandHandlerInterface;
+use Choccybiccy\TwitchBot\Handlers\Interfaces\FilesystemAwareHandlerInterface;
 use Choccybiccy\TwitchBot\Handlers\Interfaces\HandlerInterface;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanLog;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanReadChat;
 use Choccybiccy\TwitchBot\Handlers\Traits\CanSendChat;
+use Choccybiccy\TwitchBot\Handlers\Traits\UsesFilesystem;
 use Choccybiccy\TwitchBot\Twitch\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use League\Flysystem\FileNotFoundException;
 use Psr\Log\LoggerAwareInterface;
 use Ratchet\Client\WebSocket;
 
 /**
  * Class CustomCommandHandler.
  */
-class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface, CommandHandlerInterface
+class CustomCommandHandler implements HandlerInterface,
+    LoggerAwareInterface,
+    CommandHandlerInterface,
+    FilesystemAwareHandlerInterface
 {
-    use CanSendChat, CanReadChat, CanLog;
+    use CanSendChat, CanReadChat, CanLog, UsesFilesystem;
 
     /**
      * @var array
@@ -37,7 +43,7 @@ class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface, Co
     /**
      * @var string
      */
-    protected $defaultCommandsFile = 'commands.json';
+    protected $commandsFile = 'commands.json';
 
     /**
      * @var string
@@ -53,15 +59,10 @@ class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface, Co
      * CustomCommandHandler constructor.
      *
      * @param Client $client
-     * @param string $commandsJsonPath
      */
-    public function __construct(Client $client, string $commandsJsonPath = null)
+    public function __construct(Client $client)
     {
         $this->client = $client;
-        if (!$commandsJsonPath) {
-            $commandsJsonPath = realpath(__DIR__ . '/../../var/') . '/' . $this->defaultCommandsFile;
-        }
-        $this->commandsJsonPath = $commandsJsonPath;
     }
 
     /**
@@ -69,28 +70,25 @@ class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface, Co
      */
     public function load(WebSocket $socket)
     {
-        if (file_exists($this->commandsJsonPath)) {
-            $commands = json_decode(file_get_contents($this->commandsJsonPath), true);
-            if ($commands) {
+        try {
+            $commands = json_decode($this->filesystem->read($this->commandsFile), true);
+            if (is_array($commands)) {
                 $this->commands = $commands;
+                $this->logger->info('Commands loaded', $this->commands);
+            } else {
+                $this->save();
             }
-        } else {
+        } catch (FileNotFoundException $e) {
             $this->save();
         }
     }
 
     /**
-     * @param array $commands
-     *
-     * @return CustomCommandHandler
+     * Save the announcements to the filesystem.
      */
-    public function setCommands(array $commands): self
+    public function save()
     {
-        $this->commands = [];
-        foreach($commands as $command => $output) {
-            $this->addCommand($command, $output);
-        }
-        return $this;
+        return $this->filesystem->put($this->commandsFile, json_encode($this->commands));
     }
 
     /**
@@ -124,17 +122,6 @@ class CustomCommandHandler implements HandlerInterface, LoggerAwareInterface, Co
     public function getCommands(): array
     {
         return $this->commands;
-    }
-
-    /**
-     * @return bool
-     */
-    protected function save(): bool
-    {
-        if ($handle = @fopen($this->commandsJsonPath, 'w')) {
-            return fwrite($handle, json_encode($this->commands));
-        }
-        return false;
     }
 
     /**

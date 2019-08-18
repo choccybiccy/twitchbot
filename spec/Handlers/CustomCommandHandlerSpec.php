@@ -3,6 +3,7 @@
 namespace spec\Choccybiccy\TwitchBot\Handlers;
 
 use Choccybiccy\TwitchBot\Twitch\Client;
+use League\Flysystem\FilesystemInterface;
 use PhpSpec\ObjectBehavior;
 use Psr\Log\LoggerInterface;
 use Ratchet\Client\WebSocket;
@@ -18,28 +19,11 @@ class CustomCommandHandlerSpec extends ObjectBehavior
      */
     protected $tempCommandsJson;
 
-    public function let(Client $client, LoggerInterface $logger)
+    public function let(Client $client, LoggerInterface $logger, FilesystemInterface $filesystem)
     {
-        $this->tempCommandsJson = sys_get_temp_dir() . '/' . uniqid('CustomCommandHandlerSpec') . '.json';
-        $this->beConstructedWith($client, $this->tempCommandsJson);
+        $this->beConstructedWith($client);
         $this->setLogger($logger);
-    }
-
-    public function letGo()
-    {
-        if (file_exists($this->tempCommandsJson)) {
-            @unlink($this->tempCommandsJson);
-        }
-    }
-
-    public function it_should_set_commands()
-    {
-        $commands = [
-            'someCommand' => uniqid('someCommand'),
-            'someOtherCommand' => uniqid('someOtherCommand'),
-        ];
-        $this->setCommands($commands);
-        $this->getCommands()->shouldReturn($commands);
+        $this->setFilesystem($filesystem);
     }
 
     public function it_should_add_commands()
@@ -61,14 +45,12 @@ class CustomCommandHandlerSpec extends ObjectBehavior
             ->shouldReturn(true);
     }
 
-    public function it_should_addcommand(Client $client, WebSocket $socket)
+    public function it_should_addcommand(Client $client, FilesystemInterface $filesystem, WebSocket $socket)
     {
         $user = ['login' => uniqid('broadcaster_')];
-        $moderators = [
-            ['user_id' => mt_rand(10000, 99999), 'user_name' => uniqid('moderator1_')],
-            ['user_id' => mt_rand(10000, 99999), 'user_name' => uniqid('moderator2_')],
-        ];
         $client->getUser()->willReturn($user);
+
+        $filesystem->put('commands.json', json_encode(['key' => 'some value']))->shouldBeCalled();
         $this->handle(
             ":{$user['login']}!user@channel.tmi.twitch.tv PRIVMSG #channel :!addcommand key some value",
             $socket
@@ -76,7 +58,7 @@ class CustomCommandHandlerSpec extends ObjectBehavior
         $this->getCommands()->shouldHaveKeyWithValue('key', 'some value');
     }
 
-    public function it_should_removecommand(Client $client, WebSocket $socket)
+    public function it_should_removecommand(Client $client, FilesystemInterface $filesystem, WebSocket $socket)
     {
         $user = ['login' => uniqid('broadcaster_')];
         $moderators = [
@@ -85,14 +67,17 @@ class CustomCommandHandlerSpec extends ObjectBehavior
         ];
         $client->getUser()->willReturn($user);
         $client->getModerators()->willReturn(new Collection($moderators));
+
         $this->addCommand('key', 'some value');
+
+        $filesystem->put('commands.json', json_encode([]))->shouldBeCalled();
         $this->handle(":{$user['login']}!user@channel.tmi.twitch.tv PRIVMSG #channel :!removecommand key", $socket);
         $this->getCommands()->shouldNotHaveKeyWithValue('key', 'some value');
     }
 
     public function it_should_run_custom_command(WebSocket $socket)
     {
-        $this->setCommands(['somecommand' => 'some output']);
+        $this->addCommand('somecommand', 'some output');
         $socket->send('PRIVMSG #channel :some output')->shouldBeCalled();
         $this->handle(":user!user@channel.tmi.twitch.tv PRIVMSG #channel :!somecommand", $socket);
     }

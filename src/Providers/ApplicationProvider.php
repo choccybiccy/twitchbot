@@ -120,6 +120,7 @@ class ApplicationProvider extends AbstractServiceProvider
                 $this->container->get(CountdownCommandHandler::class),
                 $this->container->get(CustomCommandHandler::class),
                 $this->container->get(QueueHandler::class),
+                $this->container->get(AnnouncementHandler::class),
             ]);
         });
     }
