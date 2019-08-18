@@ -6,6 +6,7 @@ use Choccybiccy\TwitchBot\Application;
 use Choccybiccy\TwitchBot\Handlers\AnnouncementHandler;
 use Choccybiccy\TwitchBot\Handlers\CountdownCommandHandler;
 use Choccybiccy\TwitchBot\Handlers\CustomCommandHandler;
+use Choccybiccy\TwitchBot\Handlers\DiceHandler;
 use Choccybiccy\TwitchBot\Handlers\KeepAliveHandler;
 use Choccybiccy\TwitchBot\Handlers\ListCommandsHandler;
 use Choccybiccy\TwitchBot\Handlers\QueueHandler;
@@ -84,6 +85,7 @@ class ApplicationProvider extends AbstractServiceProvider
                     $this->container->get(QueueHandler::class),
                     $this->container->get(AnnouncementHandler::class),
                     $this->container->get(ListCommandsHandler::class),
+                    $this->container->get(DiceHandler::class),
                 ],
                 $this->container->get(LoggerInterface::class)
             );
@@ -114,6 +116,9 @@ class ApplicationProvider extends AbstractServiceProvider
         $this->container->add(AnnouncementHandler::class, function () {
             return new AnnouncementHandler($this->container->get(Client::class));
         });
+        $this->container->add(DiceHandler::class, function () {
+            return new DiceHandler();
+        });
         $this->container->add(ListCommandsHandler::class, function () {
             return new ListCommandsHandler([
                 $this->container->get(TwitchStatsHandler::class),
@@ -121,6 +126,7 @@ class ApplicationProvider extends AbstractServiceProvider
                 $this->container->get(CustomCommandHandler::class),
                 $this->container->get(QueueHandler::class),
                 $this->container->get(AnnouncementHandler::class),
+                $this->container->get(DiceHandler::class),
             ]);
         });
     }
