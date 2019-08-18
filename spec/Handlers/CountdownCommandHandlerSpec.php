@@ -62,12 +62,7 @@ class CountdownCommandHandlerSpec extends ObjectBehavior
     public function it_should_removecommand(Client $client, FilesystemInterface $filesystem, WebSocket $socket)
     {
         $user = ['login' => uniqid('broadcaster_')];
-        $moderators = [
-            ['user_id' => mt_rand(10000, 99999), 'user_name' => uniqid('moderator1_')],
-            ['user_id' => mt_rand(10000, 99999), 'user_name' => uniqid('moderator2_')],
-        ];
         $client->getUser()->willReturn($user);
-        $client->getModerators()->willReturn(new Collection($moderators));
         $date = (new \DateTime('tomorrow'))->format('Y-m-d H:i');
         $this->addCommand('key', $date);
 
