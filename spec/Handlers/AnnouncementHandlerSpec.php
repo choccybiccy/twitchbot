@@ -7,6 +7,7 @@ use Choccybiccy\TwitchBot\Twitch\Client;
 use League\Flysystem\FilesystemInterface;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
+use Psr\Log\LoggerInterface;
 use Ratchet\Client\WebSocket;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
@@ -16,11 +17,12 @@ class AnnouncementHandlerSpec extends ObjectBehavior
 {
     use MessageMaker;
 
-    public function let(Client $client, FilesystemInterface $filesystem, LoopInterface $loop)
+    public function let(Client $client, FilesystemInterface $filesystem, LoopInterface $loop, LoggerInterface $logger)
     {
         $this->beConstructedWith($client);
         $this->setFilesystem($filesystem);
         $this->setLoop($loop);
+        $this->setLogger($logger);
     }
 
     public function it_should_not_handle_announcement_if_not_admin(Client $client)
