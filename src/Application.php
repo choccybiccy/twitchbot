@@ -2,11 +2,10 @@
 
 namespace Choccybiccy\TwitchBot;
 
-use Choccybiccy\TwitchBot\Handlers\Interfaces\FilesystemAwareHandlerInterface;
-use Choccybiccy\TwitchBot\Handlers\Interfaces\HandlerInterface;
-use Choccybiccy\TwitchBot\Handlers\Interfaces\LoopAwareHandlerInterface;
-use League\Flysystem\FilesystemInterface;
-use Psr\Log\LoggerAwareInterface;
+use Choccybiccy\TwitchBot\Event\MessageEvent;
+use Choccybiccy\TwitchBot\Event\PingEvent;
+use InvalidArgumentException;
+use League\Event\Emitter;
 use Psr\Log\LoggerInterface;
 use Ratchet\Client\WebSocket;
 use React\EventLoop\LoopInterface;
@@ -23,9 +22,9 @@ class Application implements ApplicationInterface
     protected $nickname;
 
     /**
-     * @var string
+     * @var string[]
      */
-    protected $channel;
+    protected $channels;
 
     /**
      * @var string
@@ -43,14 +42,9 @@ class Application implements ApplicationInterface
     protected $reactClient;
 
     /**
-     * @var FilesystemInterface
+     * @var Emitter
      */
-    protected $filesystem;
-
-    /**
-     * @var HandlerInterface[]
-     */
-    protected $handlers = [];
+    protected $events;
 
     /**
      * @var LoggerInterface
@@ -61,31 +55,28 @@ class Application implements ApplicationInterface
      * Application constructor.
      *
      * @param string $nickname
-     * @param string $channel
+     * @param string[] $channels
      * @param string $botToken
      * @param LoopInterface $loop
      * @param ReactClient $reactClient
-     * @param FilesystemInterface $filesystem
-     * @param HandlerInterface[] $handlers
+     * @param Emitter $events
      * @param LoggerInterface $logger
      */
     public function __construct(
         string $nickname,
-        string $channel,
+        array $channels,
         string $botToken,
         LoopInterface $loop,
         ReactClient $reactClient,
-        FilesystemInterface $filesystem,
-        array $handlers,
+        Emitter $events,
         LoggerInterface $logger
     ) {
         $this->nickname = $nickname;
-        $this->channel = $channel;
+        $this->channels = $channels;
         $this->botToken = $botToken;
         $this->loop = $loop;
         $this->reactClient = $reactClient;
-        $this->filesystem = $filesystem;
-        $this->handlers = $handlers;
+        $this->events = $events;
         $this->logger = $logger;
     }
 
@@ -94,27 +85,12 @@ class Application implements ApplicationInterface
      */
     public function run()
     {
-        foreach ($this->handlers as $handler) {
-            $this->logger->debug('Loaded handler: ' . get_class($handler));
-            if ($handler instanceof LoggerAwareInterface) {
-                $handler->setLogger($this->logger);
-            }
-            if ($handler instanceof LoopAwareHandlerInterface) {
-                $handler->setLoop($this->loop);
-            }
-            if ($handler instanceof FilesystemAwareHandlerInterface) {
-                $handler->setFilesystem($this->filesystem);
-            }
-        }
         $this->reactClient->then(function (WebSocket $socket) {
-            foreach ($this->handlers as $handler) {
-                $handler->load($socket);
-            }
             $this->logger->info('Connection established');
             $this->socket = $socket;
             $socket->on('message', function ($message) use ($socket) {
                 $this->logger->debug('< ' . $message);
-                $this->handleMessage($message, $socket);
+                $this->emitEvents($message, $socket);
             });
             $socket->on('close', function ($code, $reason) {
                 $this->logger->info('Connection closed', [
@@ -124,23 +100,30 @@ class Application implements ApplicationInterface
             });
             $socket->send(sprintf('PASS oauth:%s', $this->botToken));
             $socket->send(sprintf('NICK %s', $this->nickname));
-            $socket->send(sprintf('JOIN #%s', $this->channel));
-            $socket->send(sprintf('PRIVMSG #%s :Bleep bloop!', $this->channel));
+            foreach ($this->channels as $channel) {
+                $socket->send(sprintf('JOIN #%s', $channel));
+            }
         });
         $this->loop->run();
     }
 
     /**
+     * Emit events message on the message received.
+     *
      * @param string $message
      * @param WebSocket $socket
+     * @return void
      */
-    protected function handleMessage(string $message, WebSocket $socket)
+    protected function emitEvents(string $message, WebSocket $socket)
     {
-        foreach ($this->handlers as $handler) {
-            if ($handler->canHandle($message)) {
-                $this->logger->debug('Handled by ' . get_class($handler), ['message' => $message]);
-                $handler->handle($message, $socket);
-            }
+        if (preg_match('/^PING\s+:(.*)/', $message, $matches)) {
+            $this->events->emit(new PingEvent($socket, $matches[1]));
+        }
+
+        try {
+            $message = MessageEvent::createFromMessage($message, $socket);
+            $this->events->emit($message);
+        } catch(InvalidArgumentException $e) {
         }
     }
 }

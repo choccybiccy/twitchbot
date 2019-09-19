@@ -13,7 +13,24 @@ if (!file_exists('.env')) {
 $dotenv = Dotenv\Dotenv::create(__DIR__);
 $dotenv->load();
 
+$config = new Noodlehaus\Config(__DIR__ . '/config/config.yml');
+$options = getopt('c:', ['config:']);
+if (array_key_exists('c', $options)) {
+    $config->load($options['c']);
+}
+if (array_key_exists('config', $options)) {
+    $config->load($options['config']);
+}
+
 $container = new League\Container\Container();
-$container->addServiceProvider(new Choccybiccy\TwitchBot\Providers\ApplicationProvider());
+$container->addServiceProvider(
+    new Choccybiccy\TwitchBot\Provider\ApplicationProvider($config)
+);
+$providers = $config->get('application.providers');
+if (is_array($providers)) {
+    foreach ($providers as $provider) {
+        $container->addServiceProvider(new $provider);
+    }
+}
 
 $container->get(Choccybiccy\TwitchBot\Application::class)->run();

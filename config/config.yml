@@ -1,0 +1,13 @@
+application:
+  providers:
+    # - My\Twitchbot\Provider
+
+bot:
+  nickname: choccyb0t
+  channels:
+    - martinph01
+    - choccyb0t
+
+events:
+  listeners:
+    # - My\Twitchbot\Event\Listener
