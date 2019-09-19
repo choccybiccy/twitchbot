@@ -1,12 +1,18 @@
 application:
+  log:
+    level: "%env(TWITCHBOT_LOG_LEVEL)%"
   providers:
     # - My\Twitchbot\Provider
 
 bot:
   nickname: choccyb0t
+  token: "%env(TWITCHBOT_BOT_TOKEN)%"
   channels:
     - martinph01
     - choccyb0t
+
+broadcaster:
+  token: "%env(TWITCHBOT_BROADCASTER_TOKEN)%"
 
 events:
   listeners:

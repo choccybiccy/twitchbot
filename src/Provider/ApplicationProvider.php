@@ -68,11 +68,13 @@ class ApplicationProvider extends AbstractServiceProvider
 
         $this->container->add(LoggerInterface::class, function () {
             return new Logger('twitchbot', [
-                new StreamHandler('php://stderr', getenv('TWITCHBOT_LOG_LEVEL') ?? Logger::DEBUG)
+                new StreamHandler('php://stderr', $this->config->get('application.log.level') ?? Logger::DEBUG)
             ]);
         });
 
-        $this->container->add(Client::class, new Client(getenv('TWITCHBOT_BROADCASTER_TOKEN')));
+        $this->container->add(Client::class, new Client(
+            $this->config->get('broadcaster.token')
+        ));
 
         $this->container->add(Emitter::class, function () {
             $emitter = new Emitter();
@@ -87,7 +89,7 @@ class ApplicationProvider extends AbstractServiceProvider
             return new Application(
                 $this->config->get('bot.nickname'),
                 $this->config->get('bot.channels'),
-                getenv('TWITCHBOT_BOT_TOKEN'),
+                $this->config->get('bot.token'),
                 $this->container->get('react.loop'),
                 $this->container->get('react.client.twitch'),
                 $this->container->get(Emitter::class),

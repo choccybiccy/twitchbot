@@ -13,7 +13,7 @@ if (!file_exists('.env')) {
 $dotenv = Dotenv\Dotenv::create(__DIR__);
 $dotenv->load();
 
-$config = new Noodlehaus\Config(__DIR__ . '/config/config.yml');
+$config = new Choccybiccy\TwitchBot\Config(__DIR__ . '/config/config.yml');
 $options = getopt('c:', ['config:']);
 if (array_key_exists('c', $options)) {
     $config->load($options['c']);
