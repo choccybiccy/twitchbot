@@ -10,4 +10,5 @@ bot:
 
 events:
   listeners:
-    # - My\Twitchbot\Event\Listener
+    # My\Twitchbot\Event\Listener
+    #  - { event: Choccybiccy\Twitchbot\Event\MessageEvent }
