@@ -87,7 +87,6 @@ class Application implements ApplicationInterface
     {
         $this->reactClient->then(function (WebSocket $socket) {
             $this->logger->info('Connection established');
-            $this->socket = $socket;
             $socket->on('message', function ($message) use ($socket) {
                 $this->logger->debug('< ' . $message);
                 $this->emitEvents($message, $socket);

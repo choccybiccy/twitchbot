@@ -2,7 +2,6 @@
 
 namespace spec\Choccybiccy\TwitchBot\Event;
 
-use Choccybiccy\TwitchBot\Event\MessageEvent;
 use PhpSpec\ObjectBehavior;
 use Ratchet\Client\WebSocket;
 

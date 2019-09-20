@@ -52,13 +52,6 @@ class ApplicationProvider extends AbstractServiceProvider
         $this->container->add(LoopInterface::class, function () {
             return Factory::create();
         }, true);
-        $this->container->add('react.client.twitch', function () {
-        });
-
-        $this->container->add(FilesystemInterface::class, function () {
-            $adapter = new Local(__DIR__ . '/../../var');
-            return new Filesystem($adapter);
-        });
 
         $this->container->add(LoggerInterface::class, function () {
             return new Logger('twitchbot', [
