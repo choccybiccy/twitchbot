@@ -5,6 +5,7 @@ namespace Choccybiccy\TwitchBot\Provider;
 use Choccybiccy\TwitchBot\Event\PingEvent;
 use Choccybiccy\TwitchBot\EventListener\DebugListener;
 use Choccybiccy\TwitchBot\EventListener\PingListener;
+use League\Container\ContainerAwareInterface;
 use League\Event\ListenerAcceptorInterface;
 use League\Event\ListenerInterface;
 use League\Event\ListenerProviderInterface;
@@ -58,14 +59,21 @@ class EventProvider implements ListenerProviderInterface
         if (array_key_exists('listeners', $this->config)
             && is_array($this->config['listeners'])
         ) {
-            foreach ($this->config['listeners'] as $listener => $config) {
-                if ($this->container->has($listener)) {
-                    $listener = $this->container->get($listener);
-                } elseif(class_exists($listener)) {
-                    $listener = new $listener;
-                }
-                if ($listener instanceof ListenerInterface) {
-                    dd($listener);
+            foreach ($this->config['listeners'] as $event => $listeners) {
+                foreach ($listeners as $listener) {
+                    if ($this->container->has($listener)) {
+                        $listener = $this->container->get($listener);
+                    } elseif(class_exists($listener)) {
+                        $listener = new $listener;
+                    }
+
+                    if ($listener instanceof ListenerInterface) {
+                        if ($listener instanceof ContainerAwareInterface) {
+                            $listener->setContainer($this->container);
+                        }
+
+                        $listenerAcceptor->addListener($event, $listener);
+                    }
                 }
             }    
         }
