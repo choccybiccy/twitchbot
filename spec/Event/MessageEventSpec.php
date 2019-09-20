@@ -22,10 +22,15 @@ class MessageEventSpec extends ObjectBehavior
 
     public function it_should_create_from_message(WebSocket $socket)
     {
+        $this->beConstructedWith('', '', '', $socket);
         $channel = uniqid('channel');
         $user = uniqid('user');
         $message = uniqid('Some message');
-        $raw = sprintf(':%s!%s@%s.tmi.twitch.tv PRIVMSG #%s :%s', $user, $user, $channel, $channel, $message);
-        $message = MessageEvent::createFromMessage($raw, $socket->getWrappedObject());
+        $raw = sprintf(':%s!%s@%s.tmi.twitch.tv PRIVMSG #%s :%s', $user, $user, $user, $channel, $message);
+        $obj = $this::createFromMessage($raw, $socket->getWrappedObject());
+        $obj->getChannel()->shouldReturn($channel);
+        $obj->getUser()->shouldReturn($user);
+        $obj->getMessage()->shouldReturn($message);
+        $obj->getSocket()->shouldReturn($socket);
     }
 }

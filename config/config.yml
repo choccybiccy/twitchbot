@@ -4,6 +4,9 @@ application:
   providers:
     # - My\TwitchBot\Provider
 
+twitch:
+  url: "wss://irc-ws.chat.twitch.tv:443"
+
 bot:
   nickname: choccyb0t
   token: "%env(TWITCHBOT_BOT_TOKEN)%"
