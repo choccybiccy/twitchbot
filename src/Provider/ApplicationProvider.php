@@ -6,7 +6,6 @@ use Choccybiccy\TwitchBot\Application;
 use Choccybiccy\TwitchBot\Twitch\Client;
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use League\Event\Emitter;
-use League\Flysystem\Adapter\Local;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Noodlehaus\Config;

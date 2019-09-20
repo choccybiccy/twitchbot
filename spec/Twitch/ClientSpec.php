@@ -2,10 +2,8 @@
 
 namespace spec\Choccybiccy\TwitchBot\Twitch;
 
-use Choccybiccy\TwitchBot\Twitch\Client;
 use GuzzleHttp\ClientInterface;
 use PhpSpec\ObjectBehavior;
-use Prophecy\Argument;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 

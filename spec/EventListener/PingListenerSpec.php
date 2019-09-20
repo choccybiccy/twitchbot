@@ -3,7 +3,6 @@
 namespace spec\Choccybiccy\TwitchBot\EventListener;
 
 use Choccybiccy\TwitchBot\Event\PingEvent;
-use Choccybiccy\TwitchBot\EventListener\PingListener;
 use PhpSpec\ObjectBehavior;
 use Psr\Log\LoggerInterface;
 use Ratchet\Client\WebSocket;
