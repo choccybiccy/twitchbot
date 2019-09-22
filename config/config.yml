@@ -19,5 +19,7 @@ broadcaster:
 
 events:
   listeners:
+    Choccybiccy\TwitchBot\Event\MessageEvent:
+      - Choccybiccy\TwitchBot\EventListener\StatsListener
     # Choccybiccy\TwitchBot\Event\MessageEvent
     #  - My\TwitchBot\Event\Listener

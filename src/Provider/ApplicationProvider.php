@@ -5,6 +5,7 @@ namespace Choccybiccy\TwitchBot\Provider;
 use Choccybiccy\TwitchBot\Application;
 use Choccybiccy\TwitchBot\Twitch\Client;
 use League\Container\ServiceProvider\AbstractServiceProvider;
+use League\Container\Container;
 use League\Event\Emitter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -27,6 +28,11 @@ class ApplicationProvider extends AbstractServiceProvider
         LoggerInterface::class,
         Application::class,
     ];
+
+    /**
+     * @var Container
+     */
+    protected $container;
 
     /**
      * @var Config

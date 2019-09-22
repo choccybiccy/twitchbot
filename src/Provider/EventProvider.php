@@ -47,20 +47,20 @@ class EventProvider implements ListenerProviderInterface
      */
     public function provideListeners(ListenerAcceptorInterface $listenerAcceptor)
     {
-        $listenerAcceptor->addListener(
-            '*', 
-            new DebugListener($this->container->get(LoggerInterface::class))
-        );
+        $logger = $this->container->get(LoggerInterface::class);
+
         $listenerAcceptor->addListener(
             PingEvent::class, 
             new PingListener($this->container->get(LoggerInterface::class))
         );
+        $logger->info('Loaded ' . PingListener::class);
 
-        if (array_key_exists('listeners', $this->config)
+        if (array_key_exists('listeners', $this->config) 
             && is_array($this->config['listeners'])
         ) {
             foreach ($this->config['listeners'] as $event => $listeners) {
                 foreach ($listeners as $listener) {
+                    $className = $listener;
                     if ($this->container->has($listener)) {
                         $listener = $this->container->get($listener);
                     } elseif(class_exists($listener)) {
@@ -73,6 +73,7 @@ class EventProvider implements ListenerProviderInterface
                         }
 
                         $listenerAcceptor->addListener($event, $listener);
+                        $logger->info('Loaded ' . get_class($listener));
                     }
                 }
             }    

@@ -9,7 +9,7 @@ use League\Event\Emitter;
 use Psr\Log\LoggerInterface;
 use Ratchet\Client\WebSocket;
 use React\EventLoop\LoopInterface;
-use React\Promise\Promise as ReactClient;
+use React\Promise\PromiseInterface as ReactClient;
 
 /**
  * Class Application.
