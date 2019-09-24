@@ -1,4 +1,5 @@
 application:
+  env: "%env(TWITCHBOT_ENV)%"
   log:
     level: "%env(TWITCHBOT_LOG_LEVEL)%"
   providers:
@@ -19,5 +20,7 @@ broadcaster:
 
 events:
   listeners:
+    '*':
+      - Choccybiccy\TwitchBot\EventListener\DebugListener
     # Choccybiccy\TwitchBot\Event\MessageEvent
     #   - My\TwitchBot\Event\Listener

@@ -35,6 +35,7 @@ class PingListener extends AbstractListener
      */
     public function handle(EventInterface $event)
     {
+        /** @var $event PingEvent */
         $event->getSocket()->send('PONG :' . $event->getHost());
         $this->logger->debug('PING? PONG!');
     }

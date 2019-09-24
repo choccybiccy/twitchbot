@@ -3,6 +3,7 @@
 namespace Choccybiccy\TwitchBot\Provider;
 
 use Choccybiccy\TwitchBot\Application;
+use Choccybiccy\TwitchBot\EventListener\DebugListener;
 use Choccybiccy\TwitchBot\Twitch\Client;
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use League\Container\Container;
@@ -71,6 +72,11 @@ class ApplicationProvider extends AbstractServiceProvider
             $this->config->get('broadcaster.token')
         ));
 
+        $this->container->add(DebugListener::class, function () {
+            return new DebugListener(
+                $this->container->get(LoggerInterface::class)
+            );
+        });
         $this->container->add(Emitter::class, function () {
             $emitter = new Emitter();
             $emitter->useListenerProvider(new EventProvider(
@@ -84,13 +90,16 @@ class ApplicationProvider extends AbstractServiceProvider
 
             $loop = $this->container->get(LoopInterface::class);
             $reactConnector = new \React\Socket\Connector($loop, [
-                'dns' => '8.8.8.8',
-                'timeout' => 10
+                'dns' => $this->config->get('twitch.connection.dns', '8.8.8.8'),
+                'timeout' => $this->config->get(
+                    'twitch.connection.timeout',
+                    10
+                )
             ]);
             $connector = new Connector($loop, $reactConnector);
 
             return new Application(
-                $this->config->get('bot.nickname') ?: 'choccyb0t',
+                $this->config->get('bot.nickname', 'choccyb0t'),
                 $this->config->get('bot.channels'),
                 $this->config->get('bot.token'),
                 $this->container->get(LoopInterface::class),

@@ -18,7 +18,7 @@ class Config extends BaseConfig
         if (is_string($value)
             && preg_match('/^\%env\(([A-Z0-9_]+)\)\%$/', $value, $matches)
         ) {
-            $value = getenv($matches[1]) ?? $default;
+            $value = getenv($matches[1]) ?: $default;
         }
         return $value;
     }
