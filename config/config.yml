@@ -8,7 +8,7 @@ twitch:
   url: "wss://irc-ws.chat.twitch.tv:443"
 
 bot:
-  nickname: choccyb0t
+  nickname: "%env(TWITCHBOT_BOT_NICKNAME)%"
   token: "%env(TWITCHBOT_BOT_TOKEN)%"
   channels:
     - martinph01
@@ -19,7 +19,5 @@ broadcaster:
 
 events:
   listeners:
-    Choccybiccy\TwitchBot\Event\MessageEvent:
-      - Choccybiccy\TwitchBot\EventListener\StatsListener
     # Choccybiccy\TwitchBot\Event\MessageEvent
-    #  - My\TwitchBot\Event\Listener
+    #   - My\TwitchBot\Event\Listener

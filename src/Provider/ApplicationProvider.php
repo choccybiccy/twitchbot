@@ -90,7 +90,7 @@ class ApplicationProvider extends AbstractServiceProvider
             $connector = new Connector($loop, $reactConnector);
 
             return new Application(
-                $this->config->get('bot.nickname'),
+                $this->config->get('bot.nickname') ?: 'choccyb0t',
                 $this->config->get('bot.channels'),
                 $this->config->get('bot.token'),
                 $this->container->get(LoopInterface::class),
