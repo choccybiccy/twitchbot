@@ -113,5 +113,36 @@ class ApplicationProvider extends AbstractServiceProvider
                 $this->container->get(LoggerInterface::class)
             );
         });
+
+        $this->loadModules();
+    }
+
+    /**
+     * Load modules.
+     *
+     * @return void
+     */
+    protected function loadModules()
+    {
+        $logger = $this->container->get(LoggerInterface::class);
+        $modules = $this->config->get('modules');
+        if (is_array($modules)) {
+            foreach ($modules as $module) {
+                try {
+                    if (class_exists($module)) {
+                        $module = (new $module)->setContainer($this->container);
+                        $module->load();
+                    } else {
+                        throw new \Exception('Class not found');
+                    }
+                } catch (\Exception $e) {
+                    $logger->error(sprintf(
+                        'Unable to load module %s: %s',
+                        $module,
+                        $e->getMessage()
+                    ));
+                }
+            }
+        }
     }
 }

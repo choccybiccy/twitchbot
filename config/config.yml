@@ -18,6 +18,10 @@ bot:
 broadcaster:
   token: "%env(TWITCHBOT_BROADCASTER_TOKEN)%"
 
+
+modules:
+  # - Choccybiccy\TwitchBot\Modules\QueueModule
+
 events:
   listeners:
     '*':
